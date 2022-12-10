@@ -18,6 +18,7 @@
   },
   "homepage": "https://github.com/awressy/wa-reader#readme",
   "dependencies": {
+    "cassandra-driver": "^4.6.4",
     "puppeteer": "^19.4.0"
   }
 }
