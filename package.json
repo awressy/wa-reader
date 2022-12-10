@@ -1,0 +1,23 @@
+{
+  "name": "wa-reader",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "dev": "nodemon index",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/awressy/wa-reader.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/awressy/wa-reader/issues"
+  },
+  "homepage": "https://github.com/awressy/wa-reader#readme",
+  "dependencies": {
+    "puppeteer": "^19.4.0"
+  }
+}
