@@ -15,34 +15,28 @@ const verification = async (page) => {
 }
 
 const readMessage = async (page) => {
-    await page.waitForSelector('div.message-in', { waitUntil: 'domcontentloaded', timeout: 0 });
-    // let message = await document.querySelectorAll('div.message-in');
-    let message = await page.$$('div.message-in')
-    // console.log(message);
-    await message.forEach(async data => {
-        // let dataid = await message.getAttribute('data-id');
-        // let logtime = await message.querySelector('div.message-in div div div div.copyable-text').getAttribute('data-pre-plain-text');
-        // let command = await message.querySelector('div.message-in div div div div div span span').innerText;
-        // // await scrapeMessages.push({
-        // //     'dataid': dataid,
-        // //     'command': command,
-        // //     'logtime': logtime 
-        // // });
-        // console.log(dataid, command, logtime);
-        await console.log(data);
-    });
-    delay(1000)
+    while (true){
+        try {
+            await page.waitForSelector('div.message-in', { waitUntil: 'domcontentloaded', timeout: 0 });
+            var messages = await page.$$eval("div.message-in", elements => elements.map(item=>item.textContent))
+            console.log(messages);
+            delay(1000)
+        } catch (err) {
+            console.log(err);
+            delay(10000)
+            continue;
+        }
+        
+    }
 }
 
 const checkGreen = async (page) => {
     while (true) {
         try {
-            delay(1000)
             await page.waitForXPath("//span[contains(@aria-label,'unread')]/ ancestor::div[@class='_3OvU8']", { waitUntil: 'load', timeout: 0 })
             const elHandle = await page.$x("//span[contains(@aria-label,'unread')]/ ancestor::div[@class='_3OvU8']");
 			await elHandle[0].click();
-            
-            readMessage(page)
+            delay(1000)
         } catch (err) {
             console.log(err);
             delay(10000)
@@ -68,11 +62,16 @@ async function main(){
         });
         verification(page)
         delay(5000)
-        checkGreen(page)
+        // checkGreen(page)
+        new Promise( async () => {
+            checkGreen(page)
+        })
+        new Promise( async () => {
+            readMessage(page)
+        })
     } catch (err) {
         console.log(err);
     }
-    
 }
 
 main()
