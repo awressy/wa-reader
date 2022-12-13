@@ -14,12 +14,47 @@ const verification = async (page) => {
     }
 }
 
+const checkGreen = async (page) => {
+    while (true) {
+        try {
+            await page.waitForXPath("//span[contains(@aria-label,'unread')]/ ancestor::div[@class='_3OvU8']", { waitUntil: 'load', timeout: 0 })
+            const elHandle = await page.$x("//span[contains(@aria-label,'unread')]/ ancestor::div[@class='_3OvU8']");
+			await elHandle[0].click();
+            delay(5000)
+        } catch (err) {
+            console.log(err);
+            delay(15000)
+            continue;
+        }
+    }
+}
+
 const readMessage = async (page) => {
     while (true){
         try {
-            await page.waitForSelector('div.message-in', { waitUntil: 'domcontentloaded', timeout: 0 });
-            var messages = await page.$$eval("div.message-in", elements => elements.map(item=>item.textContent))
-            console.log(messages);
+            await page.waitForSelector('div.message-in', { waitUntil: 'domcontentloaded', timeout: 0 })
+
+            var textContent = await page.evaluate(async () => {
+				let scrapeMessages = await [];
+				let message = await document.querySelectorAll('div.message-in');
+				
+				await message.forEach(async message => {
+					let dataid = await message.getAttribute('data-id');
+					let logtime = await message.querySelector('div.message-in div div div div.copyable-text').getAttribute('data-pre-plain-text');
+					let command = await message.querySelector('div.message-in div div div div div span span').innerText;
+					await scrapeMessages.push({
+						'dataid': dataid,
+						'command': command,
+						'logtime': logtime 
+					});
+				});
+				return { 'logwa': scrapeMessages };
+			});
+
+            let key = textContent.logwa;
+
+            console.log(key);
+
             delay(1000)
         } catch (err) {
             console.log(err);
@@ -30,20 +65,7 @@ const readMessage = async (page) => {
     }
 }
 
-const checkGreen = async (page) => {
-    while (true) {
-        try {
-            await page.waitForXPath("//span[contains(@aria-label,'unread')]/ ancestor::div[@class='_3OvU8']", { waitUntil: 'load', timeout: 0 })
-            const elHandle = await page.$x("//span[contains(@aria-label,'unread')]/ ancestor::div[@class='_3OvU8']");
-			await elHandle[0].click();
-            delay(1000)
-        } catch (err) {
-            console.log(err);
-            delay(10000)
-            continue;
-        }
-    }
-}
+
 
 const sendAutoMessage = async (page) => {
 
@@ -77,6 +99,7 @@ async function main(){
 main()
 
 function delay(time) {
+    //time = ms
 	return new Promise(function (resolve) {
 		setTimeout(resolve, time);
 	});
