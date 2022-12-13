@@ -1,6 +1,12 @@
 const puppeteer = require('puppeteer');
 const cassandra = require('cassandra-driver')
 
+const client = new cassandra.Client({
+    contactPoints: [process.env.CONTACT],
+    localDataCenter: process.env.LOCAL_DATA,
+    keyspace: process.env.KEYSPACE
+});
+
 const verification = async (page) => {
     try {
     	await page.goto("https://web.whatsapp.com", { waitUntil: 'domcontentloaded' });
@@ -40,18 +46,32 @@ const readMessage = async (page) => {
 				
 				await message.forEach(async message => {
 					let dataid = await message.getAttribute('data-id');
-					let logtime = await message.querySelector('div.message-in div div div div.copyable-text').getAttribute('data-pre-plain-text');
+					let logtimeraw = await message.querySelector('div.message-in div div div div.copyable-text').getAttribute('data-pre-plain-text');
 					let command = await message.querySelector('div.message-in div div div div div span span').innerText;
+                    let logtime = await logtimeraw.substring(
+                        logtimeraw.lastIndexOf("[") + 1, 
+                        logtimeraw.lastIndexOf("]")
+                    );
+                    let username = await logtimeraw.substring(
+                        logtimeraw.lastIndexOf("] ") + 2, 
+                        logtimeraw.lastIndexOf(": ")
+                    );
+                    var nomor = await dataid.substring(
+                        dataid.lastIndexOf("false_")+6, 
+                        dataid.lastIndexOf("@")
+                    );
 					await scrapeMessages.push({
 						'dataid': dataid,
+                        'username': username,
+                        'nomor': nomor,
 						'command': command,
 						'logtime': logtime 
 					});
 				});
-				return { 'logwa': scrapeMessages };
+				return scrapeMessages;
 			});
 
-            let key = textContent.logwa;
+            let key = textContent;
 
             console.log(key);
 
