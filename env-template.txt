@@ -1,0 +1,3 @@
+CONTACT = String but you can use '127.0.0.1'
+LOCAL_DATA = String but usually 'datacenter1'
+KEYSPACE = String

@@ -1,3 +1,5 @@
+require('dotenv').config()
+
 const puppeteer = require('puppeteer');
 const cassandra = require('cassandra-driver')
 
@@ -47,7 +49,7 @@ const readMessage = async (page) => {
 				await message.forEach(async message => {
 					let dataid = await message.getAttribute('data-id');
 					let logtimeraw = await message.querySelector('div.message-in div div div div.copyable-text').getAttribute('data-pre-plain-text');
-					let command = await message.querySelector('div.message-in div div div div div span span').innerText;
+					let msg = await message.querySelector('div.message-in div div div div div span span').innerText;
                     let logtime = await logtimeraw.substring(
                         logtimeraw.lastIndexOf("[") + 1, 
                         logtimeraw.lastIndexOf("]")
@@ -56,15 +58,15 @@ const readMessage = async (page) => {
                         logtimeraw.lastIndexOf("] ") + 2, 
                         logtimeraw.lastIndexOf(": ")
                     );
-                    var nomor = await dataid.substring(
+                    var number = await dataid.substring(
                         dataid.lastIndexOf("false_")+6, 
                         dataid.lastIndexOf("@")
                     );
 					await scrapeMessages.push({
 						'dataid': dataid,
                         'username': username,
-                        'nomor': nomor,
-						'command': command,
+                        'number': number,
+						'message': msg,
 						'logtime': logtime 
 					});
 				});
@@ -73,7 +75,16 @@ const readMessage = async (page) => {
 
             let key = textContent;
 
-            console.log(key);
+            // console.log(key);
+            await key.forEach(async (el) => {
+                const select_query = `SELECT * FROM message_in WHERE dataid=?`
+                const get_data = await client.execute(select_query, [el.dataid])
+                if(get_data.rowLength === 0){
+                    const insert_query = `INSERT INTO message_in (dataid, logtime, message, number, username) VALUES (?, ?, ?, ?, ?)`
+                    client.execute(insert_query, [el.dataid ,el.logtime ,el.message ,el.number ,el.username])
+                    .catch(err => console.log(err))
+                }
+            })
 
             delay(1000)
         } catch (err) {
@@ -84,8 +95,6 @@ const readMessage = async (page) => {
         
     }
 }
-
-
 
 const sendAutoMessage = async (page) => {
 
