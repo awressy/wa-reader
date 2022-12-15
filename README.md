@@ -8,4 +8,4 @@ Automate read Whatsapp message and store in database
 - change database client info or make .env file like at env-template.txt
 
 # Run
-Just run via node index.js or npm start and scan qrcode from whatsapp, store data in database cassandra.
+Just run via node index.js or npm start and scan qrcode from whatsapp, store data in database cassandra when receive message.
